@@ -141,7 +141,7 @@ run_checker()
 			done
 		fi
 
-		LINUX_ADD_CMDLINE="so2=$assignment" ./qemu/run-qemu.sh &> /dev/null &
+		LINUX_ADD_CMDLINE="so2=$assignment" make checker &> /dev/null &
 		
 		echo -n "CHECKER IS RUNNING"
 		while [ ! -f $finished ]
