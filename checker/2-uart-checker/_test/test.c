@@ -53,7 +53,6 @@
 static float
 do_test(const char *description, int value, int expected, int negate, int fatal, float points)
 {
-	cnt += points;
 	int num_chars;
 
 	num_chars = printf("%s", description);
