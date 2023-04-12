@@ -18,14 +18,14 @@ $ git clone <remote_of_your_private_fork>
 
 ## Working on the assignment
 Start the assignment from the header inside the `src/` directory.
-Please note that you must provide a `Kbuild` file and the module name must be `tracer.ko`.
+Please note that you must provide a `Kbuild` file and the module name must be `uart16550.ko`.
 > **Warning**
 > You must not change this header, it will be overwritten by the checker. 
 > You can include any other headers in your project.
 
 The first option is to code in the `src/` and run the checker using the following command:
 ```
-$ ./local.sh checker 1-tracer
+$ ./local.sh checker 2-uart
 ```
 This will start the docker, start the SO2 VM inside the docker and run the checher for you inside the VM.
 If your run on Linux you can add the `--privileged` argument to the previous command and the checker will run with KVM support.
@@ -40,8 +40,8 @@ Thus the container will be started in privileged mode and you have access to KVM
 After executing the last command you should get a prompter in the docker.
 
 > **Warning**
-> When running in interactive mode the `src/` directory is mounted to the `/linux/tools/labs/skels/assignments/1-tracer` directory inside the docker.
-> The previous directory is shared with the VM as well in `skels/assignments/1-tracer`.
+> When running in interactive mode the `src/` directory is mounted to the `/linux/tools/labs/skels/assignments/2-uart` directory inside the docker.
+> The previous directory is shared with the VM as well in `skels/assignments/2-uart`.
 > So any change in one  would affect the other.
 > **Be careful not to delete your code!**.
 > We encourage you to make as many commits as possible on your **private** gitlab repo!
@@ -59,24 +59,25 @@ $ make console
 ```
 After this command you should get a prompter inside the VM
 
-4. Copy the `*.ko` into the `skels/assginments/1-tracer-checker` directory
+4. Copy the `*.ko` into the `skels/assginments/2-uart-checker` directory
 ```
 # you should be in /home/root inside the VM
-$ cd skels/assignments/1-tracer-checker
-$ cp ../1-tracer/tracer.ko .
-# you should also copy the tracer_helper.ko from the _helper directory
+$ cd skels/assignments/2-uart-checker
+$ cp ../2-uart/uart16550.ko .
+# If you cannot find the solution.ko symlink in the checker directory
+# you should also copy the solution.ko from the _test directory
 # this module is part of the checker
-$ cp  _helper/tracer_helper.ko .
+$ cp  _test/solution.ko .
 ```
 
 5. Run the checker
 ```
-# you should be in skels/assignments/1-tracer-checker inside the VM
+# you should be in skels/assignments/2-uart-checker inside the VM
 sh _checker
 ```
 
 ## Submiting the assignment
-1. Create a `*.zip` archive containing all the source files and headers of your solution and a `Kbuild` file that results in the `tracer.ko` module.
+1. Create a `*.zip` archive containing all the source files and headers of your solution and a `Kbuild` file that results in the `uart16550.ko` module.
 > **Warning**
 > Please, keep in mind that you are not allowed to change the header inside the `/src` directory (`vmchecker-next` will overwrite this file, along with others).
 > Also, make sure the sources are in the **root of the archive**.
