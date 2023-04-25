@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include "uart16550.h"
 
@@ -45,6 +46,15 @@
 #define test(d, v, e, p)		do_test((d), (v), (e), 0, 0, (p))
 #define not_test(d, v, e, p)		do_test((d), (v), (e), 1, 0, (p))
 #define fatal_test(d, v, e,p)		do_test((d), (v), (e), 0, 1, (p))
+
+#define GENERIC_TEST_TIMEOUT 3
+
+
+void sig_handler(int signum) {
+	fprintf(stderr, "Child process pid=%d of checker (that issues read/write syscalls to the driver) got killed after TIMEOUT=%ds\n", getpid(), GENERIC_TEST_TIMEOUT);
+	fprintf(stderr, "\tThis might be because you didn't implement read/write or there is a bug in the implementation\n");
+	exit(EXIT_FAILURE);
+}
 
 /*
  * if the test passes it will return 0
@@ -328,8 +338,10 @@ copy_file(int fdr, int fdw, int len)
 static int
 copy_test(int fd0, int fd1, int speed_set)
 {
-	pid_t rpid, wpid;
-	int len, status, rc, fd;
+	pid_t rpid, wpid, kpid;
+	int len, status, fd;
+	int rc1, rc2, rc3, exit_status1, exit_status2, exit_status3;
+	int i;
 
 	len = gen_test_file(INFILE, speed_set);
 	rpid = fork();
@@ -360,17 +372,46 @@ copy_test(int fd0, int fd1, int speed_set)
 		break;
 	}
 
-	rc = waitpid(rpid, &status, 0);
-	if (rc < 0)
-		return rc;
-	if (WEXITSTATUS(status))
-		return WEXITSTATUS(status);
+	kpid = fork();
+	switch (kpid) {
+	case 0:
+		for (i = 0; i < GENERIC_TEST_TIMEOUT; i++) {
+			/*
+			 * check if procs still exist. kill with arg 0
+			 * will succed (ret 0) if the pid exists
+			 */
+			if (!kill(rpid, 0)) {
+				sleep(1);
+				continue;
+			} else if (!kill(wpid, 0)) {
+				sleep(1);
+				continue;
+			} else
+				break;
 
-	rc = waitpid(wpid, &status, 0);
-	if (rc < 0)
-		return rc;
-	if (WEXITSTATUS(status))
-		return WEXITSTATUS(status);
+		}
+		kill(rpid, SIGTERM);
+		kill(wpid, SIGTERM);
+		exit(EXIT_SUCCESS);
+		break;
+	default:
+		break;
+
+	}
+
+	rc1 = waitpid(rpid, &status, 0);
+	exit_status1 = WEXITSTATUS(status);
+		
+
+	rc2 = waitpid(wpid, &status, 0);
+	exit_status2 = WEXITSTATUS(status);
+
+	rc3 = waitpid(kpid, &status, 0);
+	exit_status3 = WEXITSTATUS(status);
+
+	if (rc1 < 0 || rc2 < 0 || rc3 < 0 || 
+		exit_status1 || exit_status2 || exit_status3)
+		return -1;
 
 	return system("diff " INFILE " " OUTFILE "> /dev/null 2> /dev/null");
 }
@@ -524,6 +565,7 @@ main(void)
 	float num_passed = 0;
 	const int total = 92;
 
+	signal(SIGTERM, sig_handler);
 	srand(time(NULL));
 	make_nodes();
 
