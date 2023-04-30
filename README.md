@@ -58,6 +58,10 @@ $ make build
 $ make console
 ```
 After this command you should get a prompter inside the VM
+To exit from the VM, you can use the following key combination:
+```
+CTRL + A X
+```
 
 4. Copy the `*.ko` into the `skels/assginments/2-uart-checker` directory
 ```
