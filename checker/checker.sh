@@ -67,8 +67,6 @@ timeout_exceeded()
         exit 0 # TODO: fixme
 }
 
-timeout_exceeded /tmp/bogdan
-exit 1
 compute_total()
 {
 
