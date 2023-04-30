@@ -34,14 +34,41 @@ usage()
 	exit 1
 }
 
-timeout_exceeded()
+
+
+recover_grade_from_timeout()
 {
-	echo TIMEOUT EXCEEDED !!! killing the process
-	echo "<VMCK_NEXT_END>"
-	pkill -SIGKILL qemu
-	exit 0
+	local output=$1
+	if [ ! -f $output ]; then
+		echo "$output not available"
+	else
+		points_total=$(echo $(cat $output | grep "....passed" | egrep -o "/.*[0-9]+\.*[0-9]*.*\]" | egrep -o "[0-9]+\.*[0-9]*" | head -n 1))
+		list=$(echo $(cat $output | grep "....passed" | egrep  -o "\[.*[0-9]+\.*[0-9]*.*\/" |  egrep -o "[0-9]+\.*[0-9]*") | sed -e 's/\s\+/,/g')
+		recovered_points=$(python3 -c "print(sum([$list]))")
+		echo "Recovered from timeout => Total: [$recovered_points/$points_total]"
+		echo "Please note that this is not a DIRECT checker output! Please contact a teaching assistant"
+		python3 -c "print('Total: ' + str(int ($recovered_points * 100 / $points_total)) + '/' + '100')"
+	fi
 }
 
+timeout_exceeded()
+{
+	local output=$1
+	pkill -SIGKILL qemu
+	echo ""
+	echo "TIMEOUT EXCEEDED !!! killing the process"
+	if [[ $RECOVER_GRADE_TIMEOUT == 0 ]]; then
+		echo "The Recover Grade Timeout option is not set! Please contact a teaching assistant!"
+	else
+		recover_grade_from_timeout $output
+	fi
+	echo "<VMCK_NEXT_END>"
+	# exit successfully for vmchecker-next to process output
+        exit 0 # TODO: fixme
+}
+
+timeout_exceeded /tmp/bogdan
+exit 1
 compute_total()
 {
 
@@ -132,7 +159,7 @@ run_checker()
 		if [ ! -f $module_path ]; then
 			error_message $assignment_mod
 			# exit successfully for vmchecker-next to process output
-			exit 0 # TODO: changeme 
+			exit 0 # TODO: fixme
 		fi
 	
 		# copy *.ko in checker
@@ -159,7 +186,7 @@ run_checker()
 					dump_output $output
 					compute_total $output
 				fi
-				timeout_exceeded
+				timeout_exceeded $output
 			fi
 			sleep 2
 			(( timeout += 2 ))
@@ -173,12 +200,15 @@ run_checker()
 
 case $1 in
 	0-list)
+		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT0_MOD $ASSIGNMENT0_DIR $ASSIGNMENT0_CHECKER_LOCAL_DIR $ASSIGNMENT0_CHECKER_DIR $ASSIGNMENT0_OUTPUT $ASSIGNMENT0_FINISHED $1
 		;;
 	1-tracer)
+		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT1_MOD $ASSIGNMENT1_DIR $ASSIGNMENT1_CHECKER_LOCAL_DIR $ASSIGNMENT1_CHECKER_DIR $ASSIGNMENT1_OUTPUT $ASSIGNMENT1_FINISHED $1 $ASSIGNMENT1_HEADER_OVERWRITE $ASSIGNMENT1_CHECKER_AUX_LIST
 		;;
 	2-uart)
+		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT2_MOD $ASSIGNMENT2_DIR $ASSIGNMENT2_CHECKER_LOCAL_DIR $ASSIGNMENT2_CHECKER_DIR $ASSIGNMENT2_OUTPUT $ASSIGNMENT2_FINISHED $1 $ASSIGNMENT2_HEADER_OVERWRITE $ASSIGNMENT2_CHECKER_AUX_LIST
  		;;
 	*)
