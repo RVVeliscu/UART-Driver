@@ -198,7 +198,7 @@ docker_interactive() {
     set -x
     cp -R ${ASSIGNMENT_CHECKER_DIR}/* "$tmpdir"
     
-    docker run $privileged --rm -it \
+    docker run $privileged --rm -it --cap-add=NET_ADMIN --device /dev/net/tun:/dev/net/tun \
             --mount type=bind,source="$SRC_DIR",target="$ASSIGNMENT_MOUNT_DIR" \
             --mount type=bind,source="$tmpdir",target="$ASSIGNMENT_CHECKER_MOUNT_DIR" \
             --workdir "$SO2_WORKSPACE" \
@@ -265,7 +265,7 @@ checker_main() {
     # In your checker script if you must use absolute paths please use $CI_PROJECT_DIR to reference the location of your directory,
     # otherwise stick to relative paths.
     # It is guaranteed that the current working directory in which checker.sh will run is  $CI_PROJECT_DIR/checker.
-    docker run $privileged --rm \
+    docker run $privileged --rm --cap-add=NET_ADMIN --device /dev/net/tun:/dev/net/tun \
             --mount type=bind,source="$tmpdir",target="$MOUNT_PROJECT_DIRECTORY" \
             "$image_name" /bin/bash -c "rm -rf /usr/local/bin/bash; cd \"$MOUNT_PROJECT_DIRECTORY\"; \"$MOUNT_PROJECT_DIRECTORY/checker/checker.sh\" \"${script_args[@]}\"" # remove bash middleware script
 
