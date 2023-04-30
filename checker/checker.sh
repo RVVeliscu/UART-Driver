@@ -46,7 +46,8 @@ recover_grade_from_timeout()
 		list=$(echo $(cat $output | grep "....passed" | egrep  -o "\[.*[0-9]+\.*[0-9]*.*\/" |  egrep -o "[0-9]+\.*[0-9]*") | sed -e 's/\s\+/,/g')
 		recovered_points=$(python3 -c "print(sum([$list]))")
 		echo "Recovered from timeout => Total: [$recovered_points/$points_total]"
-		echo "Please note that this is not a DIRECT checker output! Please contact a teaching assistant"
+		echo "Please note that this is not a DIRECT checker output! Other penalties may be applied!"
+		echo "Please contact a teaching assistant"
 		python3 -c "print('Total: ' + str(int ($recovered_points * 100 / $points_total)) + '/' + '100')"
 	fi
 }
@@ -206,7 +207,7 @@ case $1 in
 		run_checker $ASSIGNMENT1_MOD $ASSIGNMENT1_DIR $ASSIGNMENT1_CHECKER_LOCAL_DIR $ASSIGNMENT1_CHECKER_DIR $ASSIGNMENT1_OUTPUT $ASSIGNMENT1_FINISHED $1 $ASSIGNMENT1_HEADER_OVERWRITE $ASSIGNMENT1_CHECKER_AUX_LIST
 		;;
 	2-uart)
-		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
+		RECOVER_GRADE_TIMEOUT=1 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT2_MOD $ASSIGNMENT2_DIR $ASSIGNMENT2_CHECKER_LOCAL_DIR $ASSIGNMENT2_CHECKER_DIR $ASSIGNMENT2_OUTPUT $ASSIGNMENT2_FINISHED $1 $ASSIGNMENT2_HEADER_OVERWRITE $ASSIGNMENT2_CHECKER_AUX_LIST
  		;;
 	*)
