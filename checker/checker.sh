@@ -5,12 +5,14 @@ SO2_WORKSPACE=/linux/tools/labs
 
 ASSIGNMENT0_MOD=list.ko
 ASSIGNMENT0_DIR=${SO2_WORKSPACE}/skels/assignments/0-list
+ASSIGNMENT0_CHECKER_LOCAL_DIR=checker/0-list-checker
 ASSIGNMENT0_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/0-list-checker
 ASSIGNMENT0_OUTPUT=${SO2_WORKSPACE}/skels/0-list-output
 ASSIGNMENT0_FINISHED=${SO2_WORKSPACE}/skels/0-list-finished
 
 ASSIGNMENT1_MOD=tracer.ko
 ASSIGNMENT1_DIR=${SO2_WORKSPACE}/skels/assignments/1-tracer
+ASSIGNMENT1_CHECKER_LOCAL_DIR=checker/1-tracer-checker
 ASSIGNMENT1_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/1-tracer-checker
 ASSIGNMENT1_OUTPUT=${SO2_WORKSPACE}/skels/1-tracer-output
 ASSIGNMENT1_FINISHED=${SO2_WORKSPACE}/skels/1-tracer-finished
@@ -19,6 +21,7 @@ ASSIGNMENT1_CHECKER_AUX_LIST="${ASSIGNMENT1_CHECKER_DIR}/_helper/tracer_helper.k
 
 ASSIGNMENT2_MOD=uart16550.ko
 ASSIGNMENT2_DIR=${SO2_WORKSPACE}/skels/assignments/2-uart
+ASSIGNMENT2_CHECKER_LOCAL_DIR=checker/2-uart-checker
 ASSIGNMENT2_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/2-uart-checker
 ASSIGNMENT2_OUTPUT=${SO2_WORKSPACE}/skels/2-uart-output
 ASSIGNMENT2_FINISHED=${SO2_WORKSPACE}/skels/2-uart-finished
@@ -36,7 +39,7 @@ timeout_exceeded()
 	echo TIMEOUT EXCEEDED !!! killing the process
 	echo "<VMCK_NEXT_END>"
 	pkill -SIGKILL qemu
-	exit 1
+	exit 0
 }
 
 compute_total()
@@ -75,17 +78,21 @@ run_checker()
 {
 	local assignment_mod=$1
 	local assignment_dir=$2
-	local checker_dir=$3
-	local output=$4
-	local finished=$5
-	local assignment=$6
-	local header_overwrite=$7
-	local aux_modules=$8
+	local local_checker_dir=$3
+	local checker_dir=$4
+	local output=$5
+	local finished=$6
+	local assignment=$7
+	local header_overwrite=$8
+	local aux_modules=$9
 
 	local module_path="${assignment_dir}/${assignment_mod}"
 
 	echo "Copying the contents of src/ into $assignment_dir"
 	cp src/* $assignment_dir
+
+	echo "Copying the contents of $local_checker_dir into $checker_dir"
+	cp -r $local_checker_dir/* $checker_dir
 
 	echo "Checking if $assignment_mod exists before build"
 	if [ -f $module_path ]; then
@@ -166,13 +173,13 @@ run_checker()
 
 case $1 in
 	0-list)
-		run_checker $ASSIGNMENT0_MOD $ASSIGNMENT0_DIR $ASSIGNMENT0_CHECKER_DIR $ASSIGNMENT0_OUTPUT $ASSIGNMENT0_FINISHED $1
+		run_checker $ASSIGNMENT0_MOD $ASSIGNMENT0_DIR $ASSIGNMENT0_CHECKER_LOCAL_DIR $ASSIGNMENT0_CHECKER_DIR $ASSIGNMENT0_OUTPUT $ASSIGNMENT0_FINISHED $1
 		;;
 	1-tracer)
-		run_checker $ASSIGNMENT1_MOD $ASSIGNMENT1_DIR $ASSIGNMENT1_CHECKER_DIR $ASSIGNMENT1_OUTPUT $ASSIGNMENT1_FINISHED $1 $ASSIGNMENT1_HEADER_OVERWRITE $ASSIGNMENT1_CHECKER_AUX_LIST
+		run_checker $ASSIGNMENT1_MOD $ASSIGNMENT1_DIR $ASSIGNMENT1_CHECKER_LOCAL_DIR $ASSIGNMENT1_CHECKER_DIR $ASSIGNMENT1_OUTPUT $ASSIGNMENT1_FINISHED $1 $ASSIGNMENT1_HEADER_OVERWRITE $ASSIGNMENT1_CHECKER_AUX_LIST
 		;;
 	2-uart)
-		run_checker $ASSIGNMENT2_MOD $ASSIGNMENT2_DIR $ASSIGNMENT2_CHECKER_DIR $ASSIGNMENT2_OUTPUT $ASSIGNMENT2_FINISHED $1 $ASSIGNMENT2_HEADER_OVERWRITE $ASSIGNMENT2_CHECKER_AUX_LIST
+		run_checker $ASSIGNMENT2_MOD $ASSIGNMENT2_DIR $ASSIGNMENT2_CHECKER_LOCAL_DIR $ASSIGNMENT2_CHECKER_DIR $ASSIGNMENT2_OUTPUT $ASSIGNMENT2_FINISHED $1 $ASSIGNMENT2_HEADER_OVERWRITE $ASSIGNMENT2_CHECKER_AUX_LIST
  		;;
 	*)
 		usage

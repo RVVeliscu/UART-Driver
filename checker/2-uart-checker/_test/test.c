@@ -66,26 +66,29 @@ do_test(const char *description, int value, int expected, int negate, int fatal,
 {
 	int num_chars;
 
-	num_chars = fprintf(stderr, "%s", description);
+	num_chars = printf("%s", description);
 	for (; num_chars < PAD_CHARS - strlen("passed"); num_chars++)
 		putchar('.');
-
 	fflush(stdout);
 	if (!negate) {
 		if (value == expected) {
-			fprintf(stderr, "passed [%.1f/%d]\n", points, total);
+			printf("passed [%.1f/%d]\n", points, total);
+			fflush(stdout);
 			return 0;
 		} else {
-			fprintf(stderr, "failed [0/%d]\n", total);
+			printf("failed [0/%d]\n", total);
+			fflush(stdout);
 			if (fatal)
 				exit(EXIT_FAILURE);
 		}
 	} else {
 		if (value != expected) {
-			fprintf(stderr, "passed [%.1f/%d]\n", points, total);
+			printf("passed [%.1f/%d]\n", points, total);
+			fflush(stdout);
 			return 0;
 		} else {
-			fprintf(stderr, "failed [0/%d]\n", total);
+			printf("failed [0/%d]\n", total);
+			fflush(stdout);
 			if (fatal)
 				exit(EXIT_FAILURE);
 		}
