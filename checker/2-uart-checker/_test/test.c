@@ -43,12 +43,13 @@
 		exit(EXIT_FAILURE);			\
 	} while (0)
 
+
 #define test(d, v, e, p)		do_test((d), (v), (e), 0, 0, (p))
 #define not_test(d, v, e, p)		do_test((d), (v), (e), 1, 0, (p))
 #define fatal_test(d, v, e,p)		do_test((d), (v), (e), 0, 1, (p))
 
 #define GENERIC_TEST_TIMEOUT 3
-
+const int total = 92;
 
 void sig_handler(int signum) {
 	fprintf(stderr, "Child process pid=%d of checker (that issues read/write syscalls to the driver) got killed after TIMEOUT=%ds\n", getpid(), GENERIC_TEST_TIMEOUT);
@@ -65,26 +66,26 @@ do_test(const char *description, int value, int expected, int negate, int fatal,
 {
 	int num_chars;
 
-	num_chars = printf("%s", description);
+	num_chars = fprintf(stderr, "%s", description);
 	for (; num_chars < PAD_CHARS - strlen("passed"); num_chars++)
 		putchar('.');
 
 	fflush(stdout);
 	if (!negate) {
 		if (value == expected) {
-			printf("passed %.1f\n", points);
+			fprintf(stderr, "passed [%.1f/%d]\n", points, total);
 			return 0;
 		} else {
-			printf("failed 0\n");
+			fprintf(stderr, "failed [0/%d]\n", total);
 			if (fatal)
 				exit(EXIT_FAILURE);
 		}
 	} else {
 		if (value != expected) {
-			printf("passed %.1f\n", points);
+			fprintf(stderr, "passed [%.1f/%d]\n", points, total);
 			return 0;
 		} else {
-			printf("failed 0\n");
+			fprintf(stderr, "failed [0/%d]\n", total);
 			if (fatal)
 				exit(EXIT_FAILURE);
 		}
@@ -563,7 +564,6 @@ int
 main(void)
 {
 	float num_passed = 0;
-	const int total = 92;
 
 	signal(SIGTERM, sig_handler);
 	srand(time(NULL));
