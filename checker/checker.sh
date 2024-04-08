@@ -1,8 +1,10 @@
 #!/bin/bash
 
-TIMEOUT=300 # 5 min
 SO2_WORKSPACE=/linux/tools/labs
+SO2_VM_LOG=/tmp/so2_vm_log.txt
 
+
+ASSIGNMENT0_TIMEOUT=300 # 5 min
 ASSIGNMENT0_MOD=list.ko
 ASSIGNMENT0_DIR=${SO2_WORKSPACE}/skels/assignments/0-list
 ASSIGNMENT0_CHECKER_LOCAL_DIR=checker/0-list-checker
@@ -10,6 +12,7 @@ ASSIGNMENT0_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/0-list-checker
 ASSIGNMENT0_OUTPUT=${SO2_WORKSPACE}/skels/0-list-output
 ASSIGNMENT0_FINISHED=${SO2_WORKSPACE}/skels/0-list-finished
 
+ASSIGNMENT1_TIMEOUT=300 # 5 min
 ASSIGNMENT1_MOD=tracer.ko
 ASSIGNMENT1_DIR=${SO2_WORKSPACE}/skels/assignments/1-tracer
 ASSIGNMENT1_CHECKER_LOCAL_DIR=checker/1-tracer-checker
@@ -19,6 +22,7 @@ ASSIGNMENT1_FINISHED=${SO2_WORKSPACE}/skels/1-tracer-finished
 ASSIGNMENT1_HEADER_OVERWRITE=${SO2_WORKSPACE}/templates/assignments/1-tracer/tracer.h
 ASSIGNMENT1_CHECKER_AUX_LIST="${ASSIGNMENT1_CHECKER_DIR}/_helper/tracer_helper.ko"
 
+ASSIGNMENT2_TIMEOUT=300 # 5 min
 ASSIGNMENT2_MOD=uart16550.ko
 ASSIGNMENT2_DIR=${SO2_WORKSPACE}/skels/assignments/2-uart
 ASSIGNMENT2_CHECKER_LOCAL_DIR=checker/2-uart-checker
@@ -27,6 +31,27 @@ ASSIGNMENT2_OUTPUT=${SO2_WORKSPACE}/skels/2-uart-output
 ASSIGNMENT2_FINISHED=${SO2_WORKSPACE}/skels/2-uart-finished
 ASSIGNMENT2_HEADER_OVERWRITE=${SO2_WORKSPACE}/templates/assignments/2-uart/uart16550.h
 ASSIGNMENT2_CHECKER_AUX_LIST="${ASSIGNMENT2_CHECKER_DIR}/_test/solution.ko"
+
+ASSIGNMENT3_TIMEOUT=360 # 6 min
+ASSIGNMENT3_MOD=ssr.ko
+ASSIGNMENT3_DIR=${SO2_WORKSPACE}/skels/assignments/3-raid
+ASSIGNMENT3_CHECKER_LOCAL_DIR=checker/3-raid-checker
+ASSIGNMENT3_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/3-raid-checker
+ASSIGNMENT3_OUTPUT=${SO2_WORKSPACE}/skels/3-raid-output
+ASSIGNMENT3_FINISHED=${SO2_WORKSPACE}/skels/3-raid-finished
+ASSIGNMENT3_HEADER_OVERWRITE=${SO2_WORKSPACE}/templates/assignments/3-raid/ssr.h
+ASSIGNMENT3_CHECKER_AUX_LIST="${ASSIGNMENT3_CHECKER_DIR}/_test/run-test"
+
+ASSIGNMENT4_TIMEOUT=300 # 5 min
+ASSIGNMENT4_MOD=af_stp.ko
+ASSIGNMENT4_DIR=${SO2_WORKSPACE}/skels/assignments/4-stp
+ASSIGNMENT4_CHECKER_LOCAL_DIR=checker/4-stp-checker
+ASSIGNMENT4_CHECKER_DIR=${SO2_WORKSPACE}/skels/assignments/4-stp-checker
+ASSIGNMENT4_OUTPUT=${SO2_WORKSPACE}/skels/4-stp-output
+ASSIGNMENT4_FINISHED=${SO2_WORKSPACE}/skels/4-stp-finished
+ASSIGNMENT4_HEADER_OVERWRITE=${SO2_WORKSPACE}/templates/assignments/4-stp/stp.h
+#ASSIGNMENT4_CHECKER_AUX_LIST="${ASSIGNMENT3_CHECKER_DIR}/_test/run-test"
+
 
 usage()
 {
@@ -59,6 +84,14 @@ timeout_exceeded()
 	echo ""
 	echo "TIMEOUT EXCEEDED !!! killing the process"
 	if [[ $RECOVER_GRADE_TIMEOUT == 0 ]]; then
+		if [ -f $output ]; then
+			echo "$output not available"
+		else
+			cat $output
+		fi
+		echo "dumping SO2_VM_LOG=${SO2_VM_LOG} output"
+		cat $SO2_VM_LOG
+
 		echo "The Recover Grade Timeout option is not set! Please contact a teaching assistant!"
 	else
 		recover_grade_from_timeout $output
@@ -83,8 +116,10 @@ compute_total()
 dump_output()
 {
 	local output=$1
+	local timeout=$2
 	echo "<VMCK_NEXT_BEGIN>"
 	cat $output
+	echo "Running time $timeout/$TIMEOUT"
 
 }
 
@@ -174,8 +209,9 @@ run_checker()
 			done
 		fi
 
-		LINUX_ADD_CMDLINE="so2=$assignment" make checker &> /dev/null &
-		
+		LINUX_ADD_CMDLINE="so2=$assignment" make checker &> ${SO2_VM_LOG} &
+
+		timeout=0
 		echo -n "CHECKER IS RUNNING"
 		while [ ! -f $finished ]
 		do
@@ -192,24 +228,38 @@ run_checker()
 			echo -n .
 		done
 		echo ""
-		dump_output $output
+		dump_output $output $timeout
 		compute_total $output
 	popd &> /dev/null
 }
 
 case $1 in
 	0-list)
+		TIMEOUT=$ASSIGNMENT0_TIMEOUT
 		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT0_MOD $ASSIGNMENT0_DIR $ASSIGNMENT0_CHECKER_LOCAL_DIR $ASSIGNMENT0_CHECKER_DIR $ASSIGNMENT0_OUTPUT $ASSIGNMENT0_FINISHED $1
 		;;
 	1-tracer)
+		TIMEOUT=$ASSIGNMENT1_TIMEOUT
 		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT1_MOD $ASSIGNMENT1_DIR $ASSIGNMENT1_CHECKER_LOCAL_DIR $ASSIGNMENT1_CHECKER_DIR $ASSIGNMENT1_OUTPUT $ASSIGNMENT1_FINISHED $1 $ASSIGNMENT1_HEADER_OVERWRITE $ASSIGNMENT1_CHECKER_AUX_LIST
 		;;
 	2-uart)
+		TIMEOUT=$ASSIGNMENT2_TIMEOUT
 		RECOVER_GRADE_TIMEOUT=1 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
 		run_checker $ASSIGNMENT2_MOD $ASSIGNMENT2_DIR $ASSIGNMENT2_CHECKER_LOCAL_DIR $ASSIGNMENT2_CHECKER_DIR $ASSIGNMENT2_OUTPUT $ASSIGNMENT2_FINISHED $1 $ASSIGNMENT2_HEADER_OVERWRITE $ASSIGNMENT2_CHECKER_AUX_LIST
  		;;
+	3-raid)
+		TIMEOUT=$ASSIGNMENT3_TIMEOUT
+		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output directory
+		run_checker $ASSIGNMENT3_MOD $ASSIGNMENT3_DIR $ASSIGNMENT3_CHECKER_LOCAL_DIR $ASSIGNMENT3_CHECKER_DIR $ASSIGNMENT3_OUTPUT $ASSIGNMENT3_FINISHED $1 $ASSIGNMENT3_HEADER_OVERWRITE $ASSIGNMENT3_CHECKER_AUX_LIST
+		;;
+	4-stp)
+		TIMEOUT=$ASSIGNMENT4_TIMEOUT
+		RECOVER_GRADE_TIMEOUT=0 # If set to 1, in case of a timeout, will calculate the total grade based on the output file
+		run_checker $ASSIGNMENT4_MOD $ASSIGNMENT4_DIR $ASSIGNMENT4_CHECKER_LOCAL_DIR $ASSIGNMENT4_CHECKER_DIR $ASSIGNMENT4_OUTPUT $ASSIGNMENT4_FINISHED $1 $ASSIGNMENT4_HEADER_OVERWRITE
+		;;
+	
 	*)
 		usage
 		;;

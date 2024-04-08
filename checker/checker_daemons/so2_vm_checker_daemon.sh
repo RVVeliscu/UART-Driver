@@ -14,29 +14,53 @@ ASSIGNMENT2_CHECKER=/home/root/skels/assignments/2-uart-checker
 ASSIGNMENT2_OUTPUT=/home/root/skels/2-uart-output
 ASSIGNMENT2_FINISHED=/home/root/skels/2-uart-finished
 
+ASSIGNMENT3_CHECKER=/home/root/skels/assignments/3-raid-checker
+ASSIGNMENT3_OUTPUT=/home/root/skels/3-raid-output
+ASSIGNMENT3_FINISHED=/home/root/skels/3-raid-finished
+
+ASSIGNMENT4_CHECKER=/home/root/skels/assignments/4-stp-checker
+ASSIGNMENT4_OUTPUT=/home/root/skels/4-stp-output
+ASSIGNMENT4_FINISHED=/home/root/skels/4-stp-finished
+
 
 assign0_list()
 {
-        cd $ASSIGNMENT0_CHECKER
-     	   sh _checker &> $ASSIGNMENT0_OUTPUT
-       	   echo FINISHED &> $ASSIGNMENT0_FINISHED
-        cd -
+	cd $ASSIGNMENT0_CHECKER
+		sh _checker &> $ASSIGNMENT0_OUTPUT
+		echo FINISHED &> $ASSIGNMENT0_FINISHED
+	cd -
 }
 
 assign1_tracer()
 {
-        cd $ASSIGNMENT1_CHECKER
-     	   sh _checker &> $ASSIGNMENT1_OUTPUT
-       	   echo FINISHED &> $ASSIGNMENT1_FINISHED
-        cd -
+	cd $ASSIGNMENT1_CHECKER
+		sh _checker &> $ASSIGNMENT1_OUTPUT
+		echo FINISHED &> $ASSIGNMENT1_FINISHED
+	cd -
 }
 
 assign2_uart()
 {
-        cd $ASSIGNMENT2_CHECKER
-     	   sh _checker &> $ASSIGNMENT2_OUTPUT
-       	   echo FINISHED &> $ASSIGNMENT2_FINISHED
-        cd -
+	cd $ASSIGNMENT2_CHECKER
+		sh _checker &> $ASSIGNMENT2_OUTPUT
+		echo FINISHED &> $ASSIGNMENT2_FINISHED
+	cd -
+}
+
+assign3_raid()
+{
+	cd $ASSIGNMENT3_CHECKER
+		sh _checker &> $ASSIGNMENT3_OUTPUT
+		echo FINISHED &> $ASSIGNMENT3_FINISHED
+	cd -
+}
+
+assign4_stp()
+{
+	cd $ASSIGNMENT4_CHECKER
+		sh _checker &> $ASSIGNMENT4_OUTPUT
+		echo FINISHED &> $ASSIGNMENT4_FINISHED
+	cd -
 }
 
 start()
@@ -51,6 +75,12 @@ start()
 			;;
 		2-uart)
 			assign2_uart
+			;;
+		3-raid)
+			assign3_raid
+			;;
+		4-stp)
+			assign4_stp
 			;;
                 *)
                         echo "Unknown option"
