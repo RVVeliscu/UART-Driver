@@ -83,6 +83,11 @@ timeout_exceeded()
 	pkill -SIGKILL qemu
 	echo ""
 	echo "TIMEOUT EXCEEDED !!! killing the process"
+	echo "dumping SO2_VM_LOG=${SO2_VM_LOG} output"
+	echo "------------------------------------------------------"
+	cat $SO2_VM_LOG
+	echo "------------------------------------------------------"
+
 	if [[ $RECOVER_GRADE_TIMEOUT == 0 ]]; then
 		if [ -f $output ]; then
 			echo "$output not available"
